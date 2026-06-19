@@ -4,10 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from backend.tasks import process_youtube
 from backend.database import get_db
 from backend.models import Note, Transcript, Job
 from backend.auth_utils import decode_access_token
-from backend.services.transcribe import get_youtube_transcript
 
 router = APIRouter()
 security = HTTPBearer()
@@ -36,11 +36,6 @@ def submit_youtube(
     db: Session = Depends(get_db),
     user_id: uuid.UUID = Depends(get_current_user_id)
 ):
-    try:
-        raw_text = get_youtube_transcript(request.url)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
     note = Note(
         user_id=user_id,
         title=request.title,
@@ -48,27 +43,18 @@ def submit_youtube(
         source_url=request.url
     )
     db.add(note)
-    db.commit()
-    db.refresh(note)
+    db.flush()
 
-    transcript = Transcript(
-        note_id=note.id,
-        raw_text=raw_text
-    )
-    db.add(transcript)
-
-    job = Job(
-        note_id=note.id,
-        status="transcribed"
-    )
+    job = Job(note_id=note.id, status="queued")
     db.add(job)
     db.commit()
+
+    process_youtube.delay(str(note.id), request.url)
 
     return {
         "note_id": str(note.id),
         "job_id": str(job.id),
-        "status": "transcribed",
-        "transcript_preview": raw_text[:200] + "..."
+        "status": "queued",
     }
 
 
