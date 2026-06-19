@@ -1,7 +1,8 @@
 import uuid
 from backend.celery_app import celery
 from backend.database import SessionLocal
-from backend.models import Note, Transcript, Job
+from backend.models import Note, Transcript, Job, NoteContent
+from backend.services.ai_formatter import format_notes
 from youtube_transcript_api import YouTubeTranscriptApi
 import re
 
@@ -22,8 +23,8 @@ def process_youtube(self, note_id: str, url: str):
         # Pull transcript
         video_id = get_video_id(url)
         fetcher = YouTubeTranscriptApi()
-        transcript = fetcher.fetch(video_id)
-        full_text = " ".join([entry.text for entry in transcript])
+        transcript_data = fetcher.fetch(video_id)
+        full_text = " ".join([entry.text for entry in transcript_data])
 
         # Save transcript
         transcript = db.query(Transcript).filter(
@@ -37,7 +38,26 @@ def process_youtube(self, note_id: str, url: str):
 
         job.status = "transcribed"
         db.commit()
-        return {"status": "transcribed", "note_id": note_id}
+
+        # Format with Claude AI
+        job.status = "formatting"
+        db.commit()
+
+        note = db.query(Note).filter(Note.id == uuid.UUID(note_id)).first()
+        formatted = format_notes(full_text, note.title)
+
+        content = NoteContent(
+            note_id=uuid.UUID(note_id),
+            summary=formatted["summary"],
+            key_concepts=formatted["key_concepts"],
+            qna=formatted["qna"],
+            action_items=formatted["action_items"]
+        )
+        db.add(content)
+        job.status = "completed"
+        db.commit()
+
+        return {"status": "completed", "note_id": note_id}
     
     except Exception as e:
         job = db.query(Job).filter(Job.note_id == uuid.UUID(note_id)).first()
