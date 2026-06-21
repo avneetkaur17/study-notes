@@ -8,30 +8,64 @@ load_dotenv()
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 def format_notes(transcript: str, title: str) -> dict:
-    prompt = f"""You are a study notes assistant. Give the transcript below, generate study notes.
+    prompt = f"""You are an expert study creator. A student is using this instead of watching a video - your notes must be so thorough and clear that they never need to watch it.
 
 Title: {title}
 
 Transcript:
-{transcript[:8000]}
+{transcript[:12000]}
 
-Respond with ONLY a JSON object in this exact format, no other text:
+Generate a comprehensive study guide. Respond with ONLY a JSON object in this exact format, no other text:
 {{
-    "summary": "3-5 sentence summary of the main topic",
-    "key_concepts": [
-    {{"term": "concept name", "definition": "clear explanation"}}
+    "summary" : "A detailed 6-8 sentence overview of everything covered. Include the main argument, key themes, and why this topic matters.",
+
+    "key_concepts" : [
+        {{
+            "term": "concept name",
+            "definition": "Clear, thorough explanation in plain English. Include how it works, why it matters, and a real-world analogy if helpful.",
+            "example": "A concrete example that makes this concept click"
+        }}
     ],
+
+    "detailed_notes": [
+        {{
+            "topic": "section or topic heading",
+            "content": "Thorough notes on this section. Write as if explaining to a smart friend who hasn't seen the video. Include all important details, nuances, and context.",
+            "bullet_points": ["key point 1", "key point 2", "key point 3"]
+        }}
+    ],
+
     "qna": [
-    {{"question": "study question", "answer": "answer"}}
+        {{
+            "question": "A meaningful exam-style question that tests real understanding",
+            "answer": "A complete, detailed answer - not just a one-liner"
+        }}
     ],
+
+    "flashcards": [
+        {{
+            "front": "Term or question",
+            "back": "Definition or answer - concise but complete"
+        }}
+    ],
+
     "action_items": [
-    "thing to review or practice"
-    ]
-}}"""
+        "Specific thing to review, practice, or look up to deepen understanding"
+    ],
+
+    "tldr": "One sentence: the single most important takeaway from this entire video"
+}}
+
+Requirements:
+- Generate at least 8 key concepts
+- Generate at least 5 detailed note sections
+- Generate at least 10 QnA pairs
+- Generate at least 15 flashcards
+-Be thorough - a student should be able to ace an exam using only these notes"""
     
     message = client.messages.create(
         model="claude-sonnet-4-6",
-        max_tokens=2000,
+        max_tokens=4000,
         messages=[{"role": "user", "content": prompt}]
     )
 

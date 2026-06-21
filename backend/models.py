@@ -51,8 +51,11 @@ class NoteContent(Base):
     note_id = Column(UUID(as_uuid=True), ForeignKey("notes.id"), nullable=False)
     summary = Column(Text, nullable=True)
     key_concepts = Column(JSON, nullable=True)
+    detailed_notes = Column(JSON, nullable=True)
     qna = Column(JSON, nullable=True)
+    flashcards = Column(JSON, nullable=True)
     action_items = Column(JSON, nullable=True)
+    tldr = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     note = relationship("Note", back_populates="content")

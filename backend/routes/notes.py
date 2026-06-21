@@ -138,9 +138,12 @@ def get_note(
         "created_at": str(note.created_at),
         "transcript": note.transcript.raw_text if note.transcript else None,
         "content": {
+            "tldr": note.content.tldr if note.content else None,
             "summary": note.content.summary if note.content else None,
             "key_concepts": note.content.key_concepts if note.content else None,
+            "detailed_notes": note.content.detailed_notes if note.content else None,
             "qna": note.content.qna if note.content else None,
+            "flashcards": note.content.flashcards if note.content else None,
             "action_items": note.content.action_items if note.content else None,
         },
         "job_status": note.job.status if note.job else None

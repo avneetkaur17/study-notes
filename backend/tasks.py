@@ -50,8 +50,11 @@ def process_youtube(self, note_id: str, url: str):
             note_id=uuid.UUID(note_id),
             summary=formatted["summary"],
             key_concepts=formatted["key_concepts"],
+            detailed_notes=formatted.get("detailed_notes"),
             qna=formatted["qna"],
-            action_items=formatted["action_items"]
+            flashcards=formatted.get("flashcards"),
+            action_items=formatted["action_items"],
+            tldr=formatted.get("tldr")
         )
         db.add(content)
         job.status = "completed"
