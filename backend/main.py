@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.routes import auth, notes
+from backend.routes import auth, notes, folders
 
 app = FastAPI(
     title="Study Notes API",
@@ -18,6 +18,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(notes.router, prefix="/notes", tags=["Notes"])
+app.include_router(folders.router, prefix="/folders", tags=["Folders"])
 
 @app.get("/")
 def health_check():

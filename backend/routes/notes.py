@@ -1,5 +1,6 @@
 import os
 import uuid
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
@@ -28,6 +29,7 @@ def get_current_user_id(
 class YouTubeRequest(BaseModel):
     url: str
     title: str
+    folder_id: Optional[str] = None
 
 
 @router.post("/youtube", status_code=201)
@@ -40,7 +42,9 @@ def submit_youtube(
         user_id=user_id,
         title=request.title,
         source_type="youtube",
-        source_url=request.url
+        source_url=request.url,
+        folder_id=uuid.UUID(request.folder_id) if request.folder_id else None
+
     )
     db.add(note)
     db.flush()
@@ -110,7 +114,9 @@ def get_notes(
             "title": note.title,
             "source_type": note.source_type,
             "created_at": str(note.created_at),
-            "job_status": note.job.status if note.job else None
+            "job_status": note.job.status if note.job else None,
+            "folder_id": str(note.folder_id) if note.folder_id else None,
+            "quiz_questions": note.content.quiz_questions if note.content else None,
         }
         for note in notes
     ]
@@ -142,7 +148,7 @@ def get_note(
             "summary": note.content.summary if note.content else None,
             "key_concepts": note.content.key_concepts if note.content else None,
             "detailed_notes": note.content.detailed_notes if note.content else None,
-            "qna": note.content.qna if note.content else None,
+            "quiz_questions": note.content.quiz_questions if note.content else None,
             "flashcards": note.content.flashcards if note.content else None,
             "action_items": note.content.action_items if note.content else None,
         },

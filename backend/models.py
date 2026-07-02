@@ -15,6 +15,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     notes = relationship("Note", back_populates="user")
+    folders = relationship("Folder", back_populates="user")
 
 
 class Note(Base):
@@ -31,6 +32,8 @@ class Note(Base):
     transcript = relationship("Transcript", back_populates="note", uselist=False)
     content = relationship("NoteContent", back_populates="note", uselist=False)
     job = relationship("Job", back_populates="note", uselist=False)
+    folder_id = Column(UUID(as_uuid=True), ForeignKey("folders.id"), nullable=True)
+    folder = relationship("Folder", back_populates="notes")
 
 
 class Transcript(Base):
@@ -52,7 +55,7 @@ class NoteContent(Base):
     summary = Column(Text, nullable=True)
     key_concepts = Column(JSON, nullable=True)
     detailed_notes = Column(JSON, nullable=True)
-    qna = Column(JSON, nullable=True)
+    quiz_questions = Column(JSON, nullable=True)
     flashcards = Column(JSON, nullable=True)
     action_items = Column(JSON, nullable=True)
     tldr = Column(Text, nullable=True)
@@ -72,3 +75,14 @@ class Job(Base):
     completed_at = Column(DateTime(timezone=True), nullable=True)
 
     note = relationship("Note", back_populates="job")
+
+class Folder(Base):
+    __tablename__ = "folders"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User", back_populates="folders")
+    notes = relationship("Note", back_populates="folder")

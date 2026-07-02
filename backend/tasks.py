@@ -51,7 +51,7 @@ def process_youtube(self, note_id: str, url: str):
             summary=formatted["summary"],
             key_concepts=formatted["key_concepts"],
             detailed_notes=formatted.get("detailed_notes"),
-            qna=formatted["qna"],
+            quiz_questions=formatted.get("quiz_questions"),
             flashcards=formatted.get("flashcards"),
             action_items=formatted["action_items"],
             tldr=formatted.get("tldr")

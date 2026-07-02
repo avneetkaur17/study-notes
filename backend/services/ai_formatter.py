@@ -35,10 +35,17 @@ Generate a comprehensive study guide. Respond with ONLY a JSON object in this ex
         }}
     ],
 
-    "qna": [
+    "quiz_questions": [
         {{
-            "question": "A meaningful exam-style question that tests real understanding",
-            "answer": "A complete, detailed answer - not just a one-liner"
+            "question": "clear exam-style question",
+            "options": {{
+                "A": "First option",
+                "B": "Second option",
+                "C": "Third option",
+                "D": "Fourth option"
+            }},
+            "correct": "A",
+            "explanation": "Why this answer is correct and why the others are wrong"
         }}
     ],
 
@@ -59,7 +66,7 @@ Generate a comprehensive study guide. Respond with ONLY a JSON object in this ex
 Requirements:
 - Generate at least 8 key concepts
 - Generate at least 5 detailed note sections
-- Generate at least 10 QnA pairs
+- Generate at least 15 quiz questions with 4 realistic options each. Make wrong options plausible, not obvious. Include difficulty: easy, medium, or hard for each question.
 - Generate at least 15 flashcards
 -Be thorough - a student should be able to ace an exam using only these notes"""
     
